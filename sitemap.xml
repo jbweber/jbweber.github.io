@@ -3,39 +3,39 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>/posts/building-a-dns-load-balancer/</loc>
+    <loc>https://blog.cofront.xyz/posts/building-a-dns-load-balancer/</loc>
     <lastmod>2018-05-13T00:00:00-04:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/global-load-balancing/</loc>
+    <loc>https://blog.cofront.xyz/posts/global-load-balancing/</loc>
     <lastmod>2018-01-27T00:00:00-04:00</lastmod>
   </url>
   
   <url>
-    <loc>/posts/home-lab-infrastructure/</loc>
+    <loc>https://blog.cofront.xyz/posts/home-lab-infrastructure/</loc>
     <lastmod>2018-01-06T00:00:00-04:00</lastmod>
   </url>
   
   <url>
-    <loc>/categories/</loc>
+    <loc>https://blog.cofront.xyz/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/</loc>
+    <loc>https://blog.cofront.xyz/</loc>
     <lastmod>2018-05-13T00:00:00-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/posts/</loc>
+    <loc>https://blog.cofront.xyz/posts/</loc>
     <lastmod>2018-05-13T00:00:00-04:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/</loc>
+    <loc>https://blog.cofront.xyz/tags/</loc>
     <priority>0</priority>
   </url>
   
