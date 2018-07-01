@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jeff Weber&#39;s Blog</title>
+    <link>/</link>
+    <description>Recent content on Jeff Weber&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; Copyright notice</copyright>
+    <lastBuildDate>Sun, 13 May 2018 00:00:00 -0400</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Building a DNS Load Balancer</title>
+      <link>/posts/building-a-dns-load-balancer/</link>
+      <pubDate>Sun, 13 May 2018 00:00:00 -0400</pubDate>
+      
+      <guid>/posts/building-a-dns-load-balancer/</guid>
+      <description>After my last post on things to consider with DNS based load balancing I had been thinking about that problem in more detail. In the work setting we replaced the custom solution I described with a new service offering based on one of the commercial GLB products. While it&amp;rsquo;s working without issues and removed some complexity from my life, I&amp;rsquo;ve been thinking about how I might be a GLB solution because why not right?</description>
+    </item>
+    
+    <item>
+      <title>Global Load Balancing</title>
+      <link>/posts/global-load-balancing/</link>
+      <pubDate>Sat, 27 Jan 2018 00:00:00 -0400</pubDate>
+      
+      <guid>/posts/global-load-balancing/</guid>
+      <description>When most people talk about Global Load Balancing they&amp;rsquo;re typically describing manipulating DNS records to allow traffic to flow to one of many similar instances of the same application for resiliency purposes. There are quite a few situations where this kind of configuration makes sense, but before implementing it you should be aware of the &amp;ldquo;gotchas&amp;rdquo; pain for your application. After spending quite a bit of time debugging the use of DNS based load balancing I thought I would do a write-up that will try to cover the lessons I learned.</description>
+    </item>
+    
+    <item>
+      <title>Home Lab Infrastructure</title>
+      <link>/posts/home-lab-infrastructure/</link>
+      <pubDate>Sat, 06 Jan 2018 00:00:00 -0400</pubDate>
+      
+      <guid>/posts/home-lab-infrastructure/</guid>
+      <description>The desire to have a minimal computing environment at home has always been strong. Early on I was a big fan of having some nice recently decommissioned rack mount servers in the basement. Eventually however all the heat, noise, and high electric bills got to me and I switched mostly to beefing up my desktop and using tools like vagrant and virtual box to scratch my lab itch.
+When Windows 10 came out I decided to replace virtual box with the built-in Hyper-V functionality, and that&amp;rsquo;s when all my troubles started.</description>
+    </item>
+    
+  </channel>
+</rss>
