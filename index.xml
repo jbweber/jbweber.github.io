@@ -18,7 +18,7 @@
       <pubDate>Sun, 13 May 2018 00:00:00 -0400</pubDate>
       
       <guid>https://blog.cofront.xyz/posts/building-a-dns-load-balancer/</guid>
-      <description>After my last post on things to consider with DNS based load balancing I had been thinking about that problem in more detail. In the work setting we replaced the custom solution I described with a new service offering based on one of the commercial GLB products. While it&amp;rsquo;s working without issues and removed some complexity from my life, I&amp;rsquo;ve been thinking about how I might be a GLB solution because why not right?</description>
+      <description>After my last post on things to consider with DNS based load balancing I had been thinking about that problem in more detail. In the work setting we replaced the custom solution I described with a new service offering based on one of the commercial GLB products. While it&amp;rsquo;s working without issues and removed some complexity from our deployment, I&amp;rsquo;ve been thinking about how building my own GLB solution because why not right?</description>
     </item>
     
     <item>
