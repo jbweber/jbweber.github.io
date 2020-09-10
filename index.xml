@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Jeff Weber</copyright>
-    <lastBuildDate>Sun, 13 May 2018 00:00:00 -0400</lastBuildDate>
+    <lastBuildDate>Tue, 08 Sep 2020 14:09:40 -0400</lastBuildDate>
     
 	<atom:link href="https://blog.cofront.xyz/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Home Lab Cache</title>
+      <link>https://blog.cofront.xyz/posts/home-lab-cache/</link>
+      <pubDate>Tue, 08 Sep 2020 14:09:40 -0400</pubDate>
+      
+      <guid>https://blog.cofront.xyz/posts/home-lab-cache/</guid>
+      <description>I use my home lab environment to create and destroy virtual machines on a fairly regular basis. One of the things I like to do is create my own virtual machine images rather than use existing cloud images. The creation of images along with regularly rotating machines means I&amp;rsquo;m constantly downloading the same operating system packages from the internet sometimes on multiple machines.
+While I was on a recent &amp;ldquo;holiday&amp;rdquo; from work (which sees me stuck at home due to COVID) I decided to work on this problem in more detail.</description>
+    </item>
     
     <item>
       <title>Building a DNS Load Balancer</title>

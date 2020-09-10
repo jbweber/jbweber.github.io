@@ -4,16 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   
-  <title>Global Load Balancing</title>
-  <meta property="og:title" content="Global Load Balancing" />
-  <meta name="twitter:title" content="Global Load Balancing" />
+  <title>Home Lab Cache</title>
+  <meta property="og:title" content="Home Lab Cache" />
+  <meta name="twitter:title" content="Home Lab Cache" />
   
 
   
 
   <meta name="author" content=""/>
   <meta property="og:site_name" content="Jeff Weber&#39;s Blog" />
-  <meta property="og:url" content="https://blog.cofront.xyz/posts/global-load-balancing/" />
+  <meta property="og:url" content="https://blog.cofront.xyz/posts/home-lab-cache/" />
 
   
   <meta name="twitter:card" content="summary" />
@@ -67,13 +67,13 @@ if (!doNotTrack) {
 
 <article class="p-article">
   <header>
-    <h1>Global Load Balancing</h1>
+    <h1>Home Lab Cache</h1>
     <div>
       
         <div class="c-time">
           Posted on
-<time datetime="2018-01-27T00:00:00-04:00">
-  Jan 27, 2018
+<time datetime="2020-09-08T14:09:40-04:00">
+  Sep 8, 2020
 </time>
 
         </div>
@@ -83,72 +83,96 @@ if (!doNotTrack) {
   </header>
   
   <section id="js-article" class="p-article__body">
-    <p>When most people talk about Global Load Balancing they&rsquo;re typically describing manipulating DNS records to allow traffic to flow to one of many similar instances of the same application for resiliency purposes. There are quite a few situations where this kind of configuration makes sense, but before implementing it you should be aware of the &ldquo;gotchas&rdquo; pain for your application. After spending quite a bit of time debugging the use of DNS based load balancing I thought I would do a write-up that will try to cover the lessons I learned.</p>
-<h2 id="a-simple-example-application">A Simple Example Application</h2>
-<p>For the purposes of this post I&rsquo;m going to describe a simple application and walk through some thinking on how to make the application resilient using DNS based load balancing.</p>
+    <p>I use my home lab environment to create and destroy virtual machines on a fairly
+regular basis. One of the things I like to do is create my own virtual machine
+images rather than use existing cloud images. The creation of images along with
+regularly rotating machines means I&rsquo;m constantly downloading the same operating
+system packages from the internet sometimes on multiple machines.</p>
+<p>While I was on a recent &ldquo;holiday&rdquo; from work (which sees me stuck at home due to
+COVID) I decided to work on this problem in more detail.</p>
+<h2 id="requirements">Requirements</h2>
+<p>As previously stated the main requirement here is to determine a way to limit
+the times my systems need to reach out to the internet for operating system
+content. Below is a simple list of goals for the solution.</p>
 <ul>
-<li>The application is a simple stateless web API that is horizontally scalable</li>
-<li>Instances of the application have an HAProxy frontend which handles terminating TLS</li>
-<li>This application is run locally and access to fancy solutions from cloud providers are not possible</li>
+<li>Minimize the amount of times content is directly downloaded from the internet</li>
+<li>Support os install and package install for CentOS and Fedora</li>
+<li>Minimize operating system configuration changes needed to use the solution</li>
 </ul>
-<p>During initial deployment we find that an instance of the application fronted by HAProxy taking care of TLS termination can handle the required load without issue. Overtime however our load grows to a level which requires more than a single instance of our application to handle. Deploying multiple instances of our application using a simple &ldquo;round robin&rdquo; load balancing configuration in HAProxy solves the immediate issue.</p>
-<p>Everything works without issue until early one morning HAProxy dies and even though all of our application instances were still available no traffic was able to reach them. After some fancy footwork performed by our prized SRE team our HAProxy was back online, but a single point of failure has been discovered and needs to be dealt with. How do we make sure our HAProxy infrastructure is resilient?</p>
-<h2 id="idea-one-many-haproxies-with-round-robin-dns">Idea One: Many HAProxies with Round Robin DNS!</h2>
-<p>The first novel idea for solving this problem is to just bring up more instances of HAProxy and use a &ldquo;round robin&rdquo; DNS record to address them. This will give clients of our application the addresses of all of our HAProxies so they can then possibly send traffic to any of them. When doing a DNS lookup for our application it looks something like this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ dig +short app.example.org
-192.168.254.200
-192.168.254.7
-192.168.254.3
-</code></pre></div><p>Awesome! Everything should be fixed and now we&rsquo;re resilient right? Unfortunately after observing traffic patterns to our HAProxy instances we see a problem. The first issue is that traffic doesn&rsquo;t seem to be evenly distributed between instances of HAProxy. It looks like clients may not all process our round robin DNS records like we expected and in some cases they might not be helping at all. Even worse when an instance of HAProxy goes offline the address for it is still returned by DNS and some clients are experiencing failures as they try to connect to it. Even though things seemed to be better problems still exist.</p>
-<h2 id="idea-two-health-checked-dns-responses">Idea Two: Health Checked DNS Responses</h2>
-<p>After going back to the drawing board on our solution we&rsquo;re going to need to address the following problems:</p>
+<h2 id="brainstorming">Brainstorming</h2>
+<p>Based on experience along with some quick internet research, there are quite
+a few ways to solve this problem. I settled on three different options, and I&rsquo;ve
+outlined them below along with some perceived pluses and minuses.</p>
+<h3 id="local-content-mirror">Local Content Mirror</h3>
+<p>This first option to consider is locally mirroring the content for the different
+operating systems I need to support. This is an option I&rsquo;ve used previously for
+supporting systems which didn&rsquo;t have direct internet access for retrieving
+content. The Linux distributions I&rsquo;m working with all have directions for how to
+create a local install mirror which look straight forward.</p>
+<h4 id="pluses">Pluses</h4>
 <ul>
-<li>DNS lookup behavior is not always deterministic when returning multiple addresses.</li>
-<li>In the event one of the instances of HAProxy went offline either due to maintenance or failure client&rsquo;s still may try to access the offline instance.</li>
+<li>only requires internet access to create the initial mirror</li>
+<li>systems could in theory have no net access at all (does not affect current
+requirements)</li>
 </ul>
-<p>Based on these observations it may be better to somehow only return one address at a time. When deciding which possible addresses to return we should also probably rely on some kind of health check so we&rsquo;re sure the endpoint is available. Using both of these solutions should address the problem we had with being deterministic with address selection by clients and only selecting addresses for endpoints that are alive. With our new solution the results of a DNS lookup for our applications address might look something like this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ dig +short app.example.org
-192.168.254.200
-
-$ dig +short app.example.org
-192.168.254.7
-
-$ dig +short app.example.org
-192.168.254.3
-
-<span style="color:#75715e"># take 192.168.254.3 offline</span>
-
-$ dig +short app.example.org
-192.168.254.200
-
-$ dig +short app.example.org
-192.168.254.7
-
-$ dig +short app.example.org
-192.168.254.200
-</code></pre></div><p>Actually achieving this is however easier said than done. We&rsquo;re going to need to somehow modify our DNS solution to understand how to validate the health of application endpoints. We&rsquo;re probably also going to need to modify our application to expose it&rsquo;s health in such a way it can be monitored by the DNS solution. There are a number of vendors and cloud providers who sell products in this space which can help solve the problem in a quick an easy manner, and I&rsquo;ve included some ideas below.</p>
-<p>I&rsquo;ll also mention that as I didn&rsquo;t have access to any of these possibilities when I solved this problem in the real world. I ended up building my own solution using health data from Hashicorp Consul about my application to drive API based updates into my DNS infrastructure. The nature of the application in question meant this type of solution worked because our SLO for access was loose enough we could afford to wait for DNS change propagation to happen in less than real time. This solution also didn&rsquo;t allow for returning only one address at a time, so much more investigation into how client code dealt with multiple addresses was required to ensure things performed as expected.</p>
-<h3 id="glb-options">GLB Options</h3>
-<p>Some options which exist that could help keep you from building this solution from scratch.</p>
+<h4 id="minuses">Minuses</h4>
 <ul>
-<li>Amazon Route53 DNS routing policies such as &ldquo;fail over routing&rdquo; or &ldquo;multivalue answer routing&rdquo; (Other cloud providers should have similar features in their hosted DNS offerings)</li>
-<li>Vendor products such as F5 GTM or A10 GSLB</li>
-<li>An open source solution like polaris-gslb</li>
+<li>operating system needs reconfigured to support local mirror</li>
+<li>need to build a solution for when / how to resynchronize</li>
+<li>full mirror includes a lot of content you may never used</li>
+<li>full mirror uses a lot of disk space (driven by content you never use)</li>
 </ul>
-<h2 id="other-considerations">Other Considerations</h2>
-<p>Once issues on the application side have been solved by having our DNS response based on the health and availability of our application, there still may be other things to consider while making sure everything is working as expected.</p>
+<h3 id="reverse-proxy--cache">Reverse Proxy + Cache</h3>
+<p>The second option is a reimagining of the first option to try to solve some of
+it&rsquo;s perceived minuses.</p>
+<p>Instead of creating a full local mirror you could configure a reverse proxy to
+an upstream{s}. Along with creating this reverse proxy adding the cache means
+files would only need to be directly downloaded the first time they&rsquo;re used and
+then would be served from cache on subsequent uses. This means we would only
+locally cache the files we used, but the rest of the content would be available
+&ldquo;Just In Time&rdquo; from the upstream.</p>
+<h4 id="pluses-1">Pluses</h4>
 <ul>
-<li>It is important to gain a deeper understanding on how this solution may work during maintenance events. Removing an instance of HAProxy from rotation and then draining connections with minimal client impact will be important.</li>
-<li>Understanding how http client connection pooling interacts with frontend configurations like http-keep-alive and client connection timeouts in the event of a grey failure. For example if the application is down through an instance of HAProxy, but HAProxy is still alive with persistent client connections how will this impact clients?</li>
-<li>Understanding how your DNS TTL is configured, what DNS caching you have in your lookup path, and how that interacts with client and frontend configurations. Make sure you understand specifically if your DNS lookup path honors DNS record TTL configuration.</li>
-<li>Make sure that your solution is well documented and understood both from an operations perspective as well as a consumer perspective. If developers aren&rsquo;t aware of how to interact with your service no matter how much time you put into making things resilient a poor client configuration will nullify that work.</li>
+<li>to consumers the mirror <em>looks</em> like it has all available content</li>
+<li>only the content we use would be available locally, saving disk space</li>
+<li>systems could in theory have no net access at all (does not affect current
+requirements)</li>
 </ul>
-<h2 id="other-interesting-ideas">Other Interesting Ideas</h2>
-<p>While exploring how to solve this problem I investigated a few other interesting ideas which we decided not to pursue. Even though we didn&rsquo;t pursue them they still might be something that inspires a solution in this problem space so I&rsquo;ll talk briefly about them below.</p>
-<h3 id="netflix-hystrix">Netflix Hystrix</h3>
-<p>Since the application in question was an infrastructure API without a user-facing interface using something like <a href="https://github.com/Netflix/Hystrix">Netflix Hystrix</a> seemed like it could possibly help. Overall even though Hystrix offered quite a few interesting features and could possibly have helped solve our problem the complexity of the solution wasn&rsquo;t something we were prepared to introduce to what was actually a fairly simple application. In the months since the initial problem I&rsquo;ve worked tangentially with Hystrix and may consider revisiting it depending on the solution based on the experience.</p>
-<h3 id="dns-srv">DNS SRV</h3>
-<p>In a prior life I spent quite a bit of time working with Microsoft Active Directory and Exchange. Based on this experience I learned quite a bit about using the DNS <code>SRV</code> locator record pattern for service discovery and client access. This record includes all the information which would be required for a smart client to determine service endpoints it should be talking to and also determine how to handle failures and connection distribution across multiple instances. While these features sound great they don&rsquo;t seem to be used very often in the real world based on my research aside from with Active Directory. For the problem at hand pushing this complexity to clients wasn&rsquo;t appropriate as there were a number of teams using this service that implemented the client logic themselves in various languages. In the future this may be something worth revisiting for a service with a homogenous client / server setup or in the event of resources being available to create reference clients for the different consumer teams.</p>
+<h4 id="minuses-1">Minuses</h4>
+<ul>
+<li>operating system needs reconfigured to support local mirror</li>
+<li>system hosting the mirror needs internet access (does not affect current requirements)</li>
+<li>configuring the system to be resilient to upstream mirror failure may be
+complex</li>
+<li>supporting other kinds of mirrors in the future has an unknown complexity
+(does not affect current requirements)</li>
+</ul>
+<h3 id="forward-proxy--cache">Forward Proxy + Cache</h3>
+<p>The third option is a transformation of the second option to try to solve some
+of it&rsquo;s perceived minuses.</p>
+<p>While it&rsquo;s a bigger jump from a usage standpoint to go from using a reverse
+proxy to a forward proxy, a lot of the downsides seem to disappear. Adding a
+global proxy configuration to the OS package manage is straight forward, and
+a lot of the questions in complexity related to upstream resiliency go away.
+There are still a few minuses, but I think they can be overcome if we actually
+build the solution.</p>
+<h4 id="pluses-2">Pluses</h4>
+<ul>
+<li>operating system configuration needed to support this option is simple</li>
+<li>systems could in theory have no net access at all (does not affect current
+requirements)</li>
+<li>supporting new types of mirrors if their tooling supports proxying is simple</li>
+</ul>
+<h4 id="minuses-2">Minuses</h4>
+<ul>
+<li>the cache may treat content from different upstream mirrors as different files</li>
+<li>some files are special and may not be something we want to cache (e.g.
+repomd.xml)</li>
+</ul>
+<h2 id="whats-next">What&rsquo;s Next</h2>
+<p>With some possible solution options available I plan to try rough
+implementations of each to see how well they work and if they merit further
+investment. Expect follow-up posts with more details.</p>
 
   </section>
   <footer>
@@ -157,12 +181,11 @@ $ dig +short app.example.org
       <div class="c-pagination__ctrl">
         <div class="c-pagination__newer">
           
-          <a href="https://blog.cofront.xyz/posts/building-a-dns-load-balancer/">Newer</a>
           
         </div>
         <div class="c-pagination__older">
           
-          <a href="https://blog.cofront.xyz/posts/home-lab-infrastructure/">Older</a>
+          <a href="https://blog.cofront.xyz/posts/building-a-dns-load-balancer/">Older</a>
           
         </div>
       </div>

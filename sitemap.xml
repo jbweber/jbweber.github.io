@@ -3,17 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://blog.cofront.xyz/posts/building-a-dns-load-balancer/</loc>
-    <lastmod>2018-05-13T00:00:00-04:00</lastmod>
+    <loc>https://blog.cofront.xyz/posts/home-lab-cache/</loc>
+    <lastmod>2020-09-08T14:09:40-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://blog.cofront.xyz/</loc>
-    <lastmod>2018-05-13T00:00:00-04:00</lastmod>
+    <lastmod>2020-09-08T14:09:40-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://blog.cofront.xyz/posts/</loc>
+    <lastmod>2020-09-08T14:09:40-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blog.cofront.xyz/posts/building-a-dns-load-balancer/</loc>
     <lastmod>2018-05-13T00:00:00-04:00</lastmod>
   </url>
   
