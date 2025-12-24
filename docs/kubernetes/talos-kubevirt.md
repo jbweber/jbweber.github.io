@@ -1,10 +1,9 @@
 ---
+layout: default
 title: Talos + KubeVirt
 parent: Kubernetes
 nav_order: 1
 ---
-
-# Single Node Talos Cluster with KubeVirt
 
 Running KubeVirt on a single-node Talos Linux cluster.
 

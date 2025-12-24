@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Custom Cloud Images
 parent: Linux
 nav_order: 1
